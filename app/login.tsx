@@ -32,7 +32,7 @@ const Page = () => {
     // if (type === SignInType.Phone) {
     //   return;
     // }
-    router.push('/(tabs)/dashboard');
+    // router.push('/(tabs)/dashboard');
     return;
   }
 

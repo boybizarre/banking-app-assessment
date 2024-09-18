@@ -21,7 +21,7 @@ const Page = () => {
   const keyboardVerticalOffset = Platform.OS === 'ios' ? 70 : 0;
 
   function onSignUp() {
-    router.push('/(tabs)/dashboard');
+    // router.push('/(tabs)/dashboard');
     return;
   }
 
