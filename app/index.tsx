@@ -6,7 +6,7 @@ import { Link } from 'expo-router';
 import Colors from '@/constants/Colors';
 
 const Page = () => {
-  const [assets] = useAssets([require('@/assets/videos/intro2.mp4')]);
+  const [assets] = useAssets([require('@/assets/videos/intro.mp4')]);
 
   return (
     <View style={styles.container}>
