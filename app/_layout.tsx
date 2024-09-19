@@ -2,7 +2,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Colors from '@/constants/Colors';
 import 'react-native-reanimated';
-import { ClerkProvider, ClerkLoaded } from '@clerk/clerk-expo';
+import { ClerkProvider, ClerkLoaded, useAuth } from '@clerk/clerk-expo';
 import { Ionicons } from '@expo/vector-icons';
 import { useFonts } from 'expo-font';
 import { useEffect } from 'react';
@@ -12,7 +12,7 @@ import { TouchableOpacity } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { Stack, useRouter, Link } from 'expo-router';
+import { Stack, useRouter, Link, useSegments } from 'expo-router';
 
 // import {
 //   DarkTheme,
@@ -57,7 +57,6 @@ const tokenCache = {
         console.log('No values stored under key: ' + key);
       }
 
-      console.log('reached here');
       return item;
     } catch (error) {
       console.error('SecureStore get item error: ', error);
@@ -89,6 +88,8 @@ function InitialLayout() {
   });
 
   const router = useRouter();
+  const segments = useSegments();
+  const { isLoaded, isSignedIn } = useAuth();
 
   // Expo Router uses Error Boundaries to catch errors in the navigation tree.
   useEffect(() => {
@@ -101,6 +102,16 @@ function InitialLayout() {
     }
   }, [loaded]);
 
+  useEffect(() => {
+    console.log('isSignedIn', isSignedIn);
+
+    // const inAuthGroup = segments[0] === '(authenticated)';
+
+    // if(isSignedIn && !inAuthGroup) router.replace('/(authenticated)/(tabs)/home');
+    // else if(!isSignedIn) router.replace('/'/)
+
+  }, [isSignedIn]);
+
   if (!loaded) {
     return null;
   }
@@ -109,6 +120,8 @@ function InitialLayout() {
     // <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
     <Stack>
       <Stack.Screen name='index' options={{ headerShown: false }} />
+
+      {/* authentication screens */}
       <Stack.Screen
         name='signup'
         options={{
@@ -124,6 +137,7 @@ function InitialLayout() {
           ),
         }}
       />
+
       <Stack.Screen
         name='login'
         options={{
@@ -150,11 +164,28 @@ function InitialLayout() {
           ),
         }}
       />
+
+      <Stack.Screen
+        name='verify/[phone]'
+        options={{
+          title: '',
+          headerBackTitle: '',
+          headerStyle: {
+            backgroundColor: Colors.background,
+          },
+          headerLeft: () => (
+            <TouchableOpacity onPress={router.back}>
+              <Ionicons name='arrow-back' size={34} color={Colors.dark} />
+            </TouchableOpacity>
+          ),
+        }}
+      />
+
       <Stack.Screen
         name='help'
         options={{ title: 'Help', presentation: 'modal' }}
       />
-      {/* <Stack.Screen name='(tabs)' options={{ headerShown: false }} /> */}
+      <Stack.Screen name='(authenticated)/(tabs)' options={{ headerShown: false }} />
     </Stack>
     // </ThemeProvider>);
   );

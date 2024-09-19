@@ -7,10 +7,15 @@ import {
   KeyboardAvoidingView,
   TouchableOpacity,
   Platform,
+  Alert,
 } from 'react-native';
-import { defaultStyles } from '@/constants/Styles';
-import { Link, useRouter } from 'expo-router';
+
+import { useRouter } from 'expo-router';
+import { isClerkAPIResponseError, useSignIn } from '@clerk/clerk-expo';
+
 import { Ionicons } from '@expo/vector-icons';
+
+import { defaultStyles } from '@/constants/Styles';
 import Colors from '@/constants/Colors';
 
 enum SignInType {
@@ -25,15 +30,51 @@ const Page = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
 
   const router = useRouter();
+  const { signIn } = useSignIn();
 
   const keyboardVerticalOffset = Platform.OS === 'ios' ? 70 : 0;
 
-  function onSignIn(type: SignInType) {
+  async function onSignIn(type: SignInType) {
+
+    router.push('/(authenticated)/(tabs)/home');
+
     // if (type === SignInType.Phone) {
-    //   return;
+    //   try {
+    //     const fullPhoneNumber = `${countryCode}${phoneNumber}`;
+
+    //     const { supportedFirstFactors } = await signIn!.create({
+    //       identifier: fullPhoneNumber,
+    //     });
+
+    //     const firstPhoneFactor: any = supportedFirstFactors.find(
+    //       (factor: any) => {
+    //         return factor.strategy === 'phone_code';
+    //       }
+    //     );
+
+    //     const { phoneNumberId } = firstPhoneFactor;
+
+    //     await signIn?.prepareFirstFactor({
+    //       strategy: 'phone_code',
+    //       phoneNumberId,
+    //     });
+
+    //     router.push({
+    //       pathname: '/verify/[phone]',
+    //       params: {
+    //         phone: fullPhoneNumber,
+    //         shouldSignIn: 'true',
+    //       },
+    //     });
+    //   } catch (err) {
+    //     console.error('Error: ', JSON.stringify(err, null, 2));
+    //     if (isClerkAPIResponseError(err)) {
+    //       if (err.errors[0].code === 'form_identifier_not_found') {
+    //         Alert.alert('Error', err.errors[0].message);
+    //       }
+    //     }
+    //   }
     // }
-    // router.push('/(tabs)/dashboard');
-    return;
   }
 
   return (

@@ -7,9 +7,13 @@ import {
   KeyboardAvoidingView,
   TouchableOpacity,
   Platform,
+  Alert,
 } from 'react-native';
-import { defaultStyles } from '@/constants/Styles';
+
+import { isClerkAPIResponseError, useSignUp } from '@clerk/clerk-expo';
 import { Link, useRouter } from 'expo-router';
+
+import { defaultStyles } from '@/constants/Styles';
 import Colors from '@/constants/Colors';
 
 const Page = () => {
@@ -17,12 +21,55 @@ const Page = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
 
   const router = useRouter();
+  const { signUp } = useSignUp();
 
   const keyboardVerticalOffset = Platform.OS === 'ios' ? 70 : 0;
 
-  function onSignUp() {
-    // router.push('/(tabs)/dashboard');
-    return;
+  async function onSignUp() {
+
+    router.push('/(authenticated)/(tabs)/home');
+
+    // const fullPhoneNumber = `${countryCode}${phoneNumber}`;
+    // console.log(fullPhoneNumber);
+
+    // try {
+    //   console.log('ere');
+    //   await signUp?.create({
+    //     phoneNumber: fullPhoneNumber,
+    //   });
+
+    //   console.log('here');
+    //   signUp?.preparePhoneNumberVerification();
+    //   console.log('there');
+
+    //   router.push({
+    //     pathname: '/verify/[phone]',
+    //     params: {
+    //       phone: fullPhoneNumber,
+    //     },
+    //   });
+    // } catch (err: any) {
+    //   // console.error('Error signing up: ', err.errors);
+    //   if (isClerkAPIResponseError(err)) {
+    //     if (err.errors[0].code === 'form_identifier_already_exists') {
+    //       Alert.alert('Error', err.errors[0].message);
+    //     }
+
+    //     if (err.errors[0].code === 'unsupported_country_code') {
+    //       Alert.alert(err.errors[0].message, err.errors[0].longMessage, [
+    //         {
+    //           text: 'Index page regardless',
+    //           onPress: () => {
+    //             console.log('OKAY Pressed');
+    //             router.push('/(authenticated)/(tabs)/home');
+    //           },
+    //         },
+    //       ]);
+    //     }
+    //   } else {
+    //     Alert.alert('Error', 'Something went wrong');
+    //   }
+    // }
   }
 
   return (
