@@ -10,6 +10,8 @@ import {
   Alert,
 } from 'react-native';
 
+import { StatusBar } from 'expo-status-bar';
+
 import { isClerkAPIResponseError, useSignUp } from '@clerk/clerk-expo';
 import { Link, useRouter } from 'expo-router';
 
@@ -26,8 +28,7 @@ const Page = () => {
   const keyboardVerticalOffset = Platform.OS === 'ios' ? 70 : 0;
 
   async function onSignUp() {
-
-    router.push('/(authenticated)/(tabs)/home');
+    router.replace('/(authenticated)/(tabs)/home');
 
     // const fullPhoneNumber = `${countryCode}${phoneNumber}`;
     // console.log(fullPhoneNumber);
@@ -72,56 +73,61 @@ const Page = () => {
     // }
   }
 
+  console.log('sign up page');
+
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior='padding'
-      keyboardVerticalOffset={keyboardVerticalOffset}
-    >
-      <View style={defaultStyles.container}>
-        <Text style={defaultStyles.header}>Sign Up</Text>
-        <Text style={defaultStyles.descriptionText}>
-          Enter your phone number. We will send you a confirmation code
-        </Text>
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder='Country code'
-            placeholderTextColor={Colors.gray}
-            value={countryCode}
-          />
-          <TextInput
-            style={[styles.input, { flex: 1 }]}
-            placeholder='Mobile Number'
-            keyboardType='numeric'
-            placeholderTextColor={Colors.gray}
-            value={phoneNumber}
-            onChangeText={setPhoneNumber}
-          />
-        </View>
+    <>
+      <StatusBar style='dark' />
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior='padding'
+        keyboardVerticalOffset={keyboardVerticalOffset}
+      >
+        <View style={defaultStyles.container}>
+          <Text style={defaultStyles.header}>Sign Up</Text>
+          <Text style={defaultStyles.descriptionText}>
+            Enter your phone number. We will send you a confirmation code
+          </Text>
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder='Country code'
+              placeholderTextColor={Colors.gray}
+              value={countryCode}
+            />
+            <TextInput
+              style={[styles.input, { flex: 1 }]}
+              placeholder='Mobile Number'
+              keyboardType='numeric'
+              placeholderTextColor={Colors.gray}
+              value={phoneNumber}
+              onChangeText={setPhoneNumber}
+            />
+          </View>
 
-        <Link href={'/login'} replace asChild>
-          <TouchableOpacity>
-            <Text style={defaultStyles.textLink}>
-              Already have an account? Log in
-            </Text>
+          <Link href={'/login'} replace asChild>
+            <TouchableOpacity>
+              <Text style={defaultStyles.textLink}>
+                Already have an account? Log in
+              </Text>
+            </TouchableOpacity>
+          </Link>
+
+          <View style={{ flex: 1 }} />
+
+          <TouchableOpacity
+            style={[
+              defaultStyles.pillButton,
+              phoneNumber !== '' ? styles.enabled : styles.disabled,
+              { marginBottom: 20, backgroundColor: Colors.black },
+            ]}
+            onPress={onSignUp}
+          >
+            <Text style={defaultStyles.buttonText}>Sign Up</Text>
           </TouchableOpacity>
-        </Link>
-
-        <View style={{ flex: 1 }} />
-
-        <TouchableOpacity
-          style={[
-            defaultStyles.pillButton,
-            phoneNumber !== '' ? styles.enabled : styles.disabled,
-            { marginBottom: 20, backgroundColor: Colors.black },
-          ]}
-          onPress={onSignUp}
-        >
-          <Text style={defaultStyles.buttonText}>Sign Up</Text>
-        </TouchableOpacity>
-      </View>
-    </KeyboardAvoidingView>
+        </View>
+      </KeyboardAvoidingView>
+    </>
   );
 };
 
