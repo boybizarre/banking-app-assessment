@@ -1,48 +1,26 @@
-import * as SplashScreen from 'expo-splash-screen';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Colors from '@/constants/Colors';
-import 'react-native-reanimated';
-import { ClerkProvider, ClerkLoaded, useAuth } from '@clerk/clerk-expo';
+import { ClerkProvider, useAuth } from '@clerk/clerk-expo';
 import { Ionicons } from '@expo/vector-icons';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useFonts } from 'expo-font';
-import { useEffect } from 'react';
+import { Link, Stack, useRouter, useSegments } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { TouchableOpacity } from 'react-native';
-
-import * as SecureStore from 'expo-secure-store';
-
+import { useEffect } from 'react';
+import { TouchableOpacity, Text, View, ActivityIndicator } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { Stack, useRouter, Link, useSegments } from 'expo-router';
+const CLERK_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
+import * as SecureStore from 'expo-secure-store';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { UserInactivityProvider } from '@/context/UserInactivity';
+const queryClient = new QueryClient();
 
-// import {
-//   DarkTheme,
-//   DefaultTheme,
-//   ThemeProvider,
-// } from '@react-navigation/native';
-
-// import { useColorScheme } from '@/components/useColorScheme';
-
-// export const unstable_settings = {
-//   // Ensure that reloading on `/modal` keeps a back button present.
-//   initialRouteName: '(tabs)',
-// };
-
-const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!;
-
+// Cache the Clerk JWT
 const tokenCache = {
   async getToken(key: string) {
     try {
-      const item = await SecureStore.getItemAsync(key);
-      if (item) {
-        console.log(`${key} was used 🔐 \n`);
-      } else {
-        console.log('No values stored under key: ' + key);
-      }
-
-      return item;
-    } catch (error) {
-      console.error('SecureStore get item error: ', error);
-      await SecureStore.deleteItemAsync(key);
+      return SecureStore.getItemAsync(key);
+    } catch (err) {
       return null;
     }
   },
@@ -63,15 +41,14 @@ export {
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-function InitialLayout() {
+const InitialLayout = () => {
   const [loaded, error] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
     ...FontAwesome.font,
   });
-
   const router = useRouter();
-  const segments = useSegments();
   const { isLoaded, isSignedIn } = useAuth();
+  const segments = useSegments();
 
   // Expo Router uses Error Boundaries to catch errors in the navigation tree.
   useEffect(() => {
@@ -85,107 +62,140 @@ function InitialLayout() {
   }, [loaded]);
 
   useEffect(() => {
-    console.log('isSignedIn', isSignedIn);
+    if (!isLoaded) return;
 
-    // const inAuthGroup = segments[0] === '(authenticated)';
+    const inAuthGroup = segments[0] === '(authenticated)';
 
-    // if(isSignedIn && !inAuthGroup) router.replace('/(authenticated)/(tabs)/home');
-    // else if(!isSignedIn) router.replace('/'/)
-
+    if (isSignedIn && !inAuthGroup) {
+      router.replace('/(authenticated)/(tabs)/home');
+    } else if (!isSignedIn) {
+      router.replace('/');
+    }
   }, [isSignedIn]);
 
-  if (!loaded) {
-    return null;
+  if (!loaded || !isLoaded) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color={Colors.primary} />
+      </View>
+    );
   }
 
   return (
-    // <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
     <Stack>
-      <Stack.Screen name='index' options={{ headerShown: false }} />
-
-      {/* authentication screens */}
+      <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen
-        name='signup'
+        name="signup"
         options={{
           title: '',
           headerBackTitle: '',
-          headerStyle: {
-            backgroundColor: Colors.background,
-          },
+          headerShadowVisible: false,
+          headerStyle: { backgroundColor: Colors.background },
           headerLeft: () => (
             <TouchableOpacity onPress={router.back}>
-              <Ionicons name='arrow-back' size={34} color={Colors.dark} />
+              <Ionicons name="arrow-back" size={34} color={Colors.dark} />
             </TouchableOpacity>
           ),
         }}
       />
 
       <Stack.Screen
-        name='login'
+        name="login"
         options={{
           title: '',
           headerBackTitle: '',
-          headerStyle: {
-            backgroundColor: Colors.background,
-          },
+          headerShadowVisible: false,
+          headerStyle: { backgroundColor: Colors.background },
           headerLeft: () => (
             <TouchableOpacity onPress={router.back}>
-              <Ionicons name='arrow-back' size={34} color={Colors.dark} />
+              <Ionicons name="arrow-back" size={34} color={Colors.dark} />
             </TouchableOpacity>
           ),
           headerRight: () => (
             <Link href={'/help'} asChild>
               <TouchableOpacity>
-                <Ionicons
-                  name='help-circle-outline'
-                  size={34}
-                  color={Colors.dark}
-                />
+                <Ionicons name="help-circle-outline" size={34} color={Colors.dark} />
               </TouchableOpacity>
             </Link>
           ),
         }}
       />
 
+      <Stack.Screen name="help" options={{ title: 'Help', presentation: 'modal' }} />
+
       <Stack.Screen
-        name='verify/[phone]'
+        name="verify/[phone]"
         options={{
           title: '',
           headerBackTitle: '',
-          headerStyle: {
-            backgroundColor: Colors.background,
-          },
+          headerShadowVisible: false,
+          headerStyle: { backgroundColor: Colors.background },
           headerLeft: () => (
             <TouchableOpacity onPress={router.back}>
-              <Ionicons name='arrow-back' size={34} color={Colors.dark} />
+              <Ionicons name="arrow-back" size={34} color={Colors.dark} />
             </TouchableOpacity>
           ),
         }}
       />
-
+      <Stack.Screen name="(authenticated)/(tabs)" options={{ headerShown: false }} />
       <Stack.Screen
-        name='help'
-        options={{ title: 'Help', presentation: 'modal' }}
+        name="(authenticated)/crypto/[id]"
+        options={{
+          title: '',
+          headerLeft: () => (
+            <TouchableOpacity onPress={router.back}>
+              <Ionicons name="arrow-back" size={34} color={Colors.dark} />
+            </TouchableOpacity>
+          ),
+          headerLargeTitle: true,
+          headerTransparent: true,
+          headerRight: () => (
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              <TouchableOpacity>
+                <Ionicons name="notifications-outline" color={Colors.dark} size={30} />
+              </TouchableOpacity>
+              <TouchableOpacity>
+                <Ionicons name="star-outline" color={Colors.dark} size={30} />
+              </TouchableOpacity>
+            </View>
+          ),
+        }}
       />
-      <Stack.Screen name='(authenticated)/(tabs)' options={{ headerShown: false }} />
+      <Stack.Screen
+        name="(authenticated)/(modals)/lock"
+        options={{ headerShown: false, animation: 'none' }}
+      />
+      <Stack.Screen
+        name="(authenticated)/(modals)/account"
+        options={{
+          presentation: 'transparentModal',
+          animation: 'fade',
+          title: '',
+          headerTransparent: true,
+          headerLeft: () => (
+            <TouchableOpacity onPress={router.back}>
+              <Ionicons name="close-outline" size={34} color={'#fff'} />
+            </TouchableOpacity>
+          ),
+        }}
+      />
     </Stack>
-    // </ThemeProvider>);
   );
-}
+};
 
-function RootLayoutNav() {
-  // const colorScheme = useColorScheme();
-
+const RootLayoutNav = () => {
   return (
-    <ClerkProvider tokenCache={tokenCache} publishableKey={publishableKey}>
-      <ClerkLoaded>
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <StatusBar style='light' />
-          <InitialLayout />
-        </GestureHandlerRootView>
-      </ClerkLoaded>
+    <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY!} tokenCache={tokenCache}>
+      <QueryClientProvider client={queryClient}>
+        <UserInactivityProvider>
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <StatusBar style="light" />
+            <InitialLayout />
+          </GestureHandlerRootView>
+        </UserInactivityProvider>
+      </QueryClientProvider>
     </ClerkProvider>
   );
-}
+};
 
 export default RootLayoutNav;
